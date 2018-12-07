@@ -23,8 +23,6 @@ def traverse(f):
         if os.path.isdir(tmp_path):
             print("- " + f1)
             ojs.append(f1)
-            
-path = 'F:/source_files/python/'
 
 def main(argv):
     global ojs
