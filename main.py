@@ -26,7 +26,6 @@ def traverse(f):
 
 def main(argv):
     global ojs
-    print("Welcome to VJSpider----------")
     print("----- available online judeges -----")
     print()
     traverse("oj/")
