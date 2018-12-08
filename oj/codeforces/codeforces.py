@@ -46,7 +46,7 @@ def Clear(text):
 
 
 def FindInfo(Prob, soup, url):
-    f = open(path.dirname(__file__)+'/tmp/' + Prob + '.md', 'w', encoding='utf-8')
+    f = open(path.dirname(path.realpath(__file__))+'/tmp/' + Prob + '.md', 'w', encoding='utf-8')
     AllInfo = soup.find('div', {'class', 'problemindexholder'})
     divs = AllInfo.find_all('div')
     title = '# ' + (divs[3].get_text())[3:]
@@ -68,7 +68,7 @@ def FindInfo(Prob, soup, url):
         SampleOutput = SampleOutputs[i].get_text()
         f.write('## Sample Input:\n```\n%s```\n' % SampleInput[5:])
         f.write('## Sample Output:\n```\n%s```\n' % SampleOutput[6:])
-    f.write('### [题目链接](%s)\n\n' % url)
+    f.write('### [Origin](%s)\n\n' % url)
     f.close()
 
 
