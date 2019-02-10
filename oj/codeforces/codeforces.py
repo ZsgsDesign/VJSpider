@@ -68,7 +68,7 @@ def FindInfo(Prob, soup, url):
         SampleOutput = SampleOutputs[i].get_text()
         f.write('## Sample Input:\n```\n%s```\n' % SampleInput[5:])
         f.write('## Sample Output:\n```\n%s```\n' % SampleOutput[6:])
-    f.write('### [Origin](%s)\n\n' % url)
+    # f.write('### [Origin](%s)\n\n' % url)
     f.close()
 
 
