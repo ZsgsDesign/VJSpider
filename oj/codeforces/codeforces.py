@@ -2,7 +2,7 @@
 
 """
     OJ: CodeForces
-    Version: 20181207
+    Version: 20190210
     Compatible: CodeMaster / VJCore
     Author: John Zhang
 """
@@ -13,6 +13,7 @@ import sys
 import getopt
 import requests
 from bs4 import BeautifulSoup
+import pymysql
 
 Latextag = 0
 
@@ -46,7 +47,8 @@ def Clear(text):
 
 
 def FindInfo(Prob, soup, url):
-    f = open(path.dirname(path.realpath(__file__))+'/tmp/' + Prob + '.md', 'w', encoding='utf-8')
+    f = open(path.dirname(path.realpath(__file__)) +
+             '/tmp/' + Prob + '.md', 'w', encoding='utf-8')
     AllInfo = soup.find('div', {'class', 'problemindexholder'})
     divs = AllInfo.find_all('div')
     title = '# ' + (divs[3].get_text())[3:]
@@ -70,15 +72,32 @@ def FindInfo(Prob, soup, url):
         f.write('## Sample Output:\n```\n%s```\n' % SampleOutput[6:])
     # f.write('### [Origin](%s)\n\n' % url)
     f.close()
+    f = open(path.dirname(path.realpath(__file__)) +
+             '/tmp/' + Prob + '.md', 'r', encoding='utf-8')
+    logToDB('CF' + Prob, (divs[3].get_text())[3:], f.read(), url, 1)
+    f.close()
+
+
+def logToDB(pcode, title, desc, origin, OJ):
+    db = pymysql.connect("localhost", "root", "root", "codemaster")
+    cursor = db.cursor()
+    sql = "INSERT INTO problem set `pcode`=%s, `title`=%s, `desc`=%s, `origin`=%s, `OJ`=%s"
+    cursor.execute(sql, (pcode, title, desc, origin, OJ))
+    # try:
+    #     cursor.execute(sql, (pcode, title, desc, origin, OJ))
+    #     db.commit()
+    # except:
+    #     db.rollback()
+    db.close()
 
 
 def main(argv):
     try:
-        opts,args = getopt.getopt(argv,"hp:",["problem"])
+        opts, args = getopt.getopt(argv, "hp:", ["problem"])
     except getopt.GetoptError:
         print("python codeforces.py -p <prob_id>")
         return
-    for opt,arg in opts:
+    for opt, arg in opts:
         if opt == "-h":
             print("python codeforces.py -p <prob_id>")
             sys.exit(2)
@@ -87,6 +106,7 @@ def main(argv):
             crawler(arg)
         else:
             print("python codeforces.py -p <prob_id>")
+
 
 def crawler(Prob):
     global Latextag
@@ -104,6 +124,7 @@ def crawler(Prob):
     html = GetHtmlText(url).replace('<br />', '\n').replace('</p>', '\n')
     soup = BeautifulSoup(html, "html.parser")
     FindInfo(Prob, soup, url)
+
 
 if __name__ == '__main__':
     main(sys.argv[1:])
