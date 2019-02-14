@@ -29,6 +29,7 @@ def GetHtmlText(url):
 
 
 def Clear(text):
+    text.replace("\n","\n\n")
     flag = True
     while flag:
         flag = False
