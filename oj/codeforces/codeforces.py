@@ -2,7 +2,7 @@
 
 """
     OJ: CodeForces
-    Version: 20190210
+    Version: 20190214
     Compatible: CodeMaster / VJCore
     Author: John Zhang
 """
@@ -47,47 +47,49 @@ def Clear(text):
 
 
 def FindInfo(Prob, soup, url):
-    f = open(path.dirname(path.realpath(__file__)) +
-             '/tmp/' + Prob + '.md', 'w', encoding='utf-8')
     AllInfo = soup.find('div', {'class', 'problemindexholder'})
     divs = AllInfo.find_all('div')
-    title = '# ' + (divs[3].get_text())[3:]
-    f.write('%s\n' % title)
-    problem = '## Description:\n' + divs[12].get_text()
-    problem = Clear(problem)
-    f.write('%s\n' % problem)
-    Input = '## Input:\n' + divs[13].get_text()[5:]
-    Input = Clear(Input)
-    f.write('%s\n' % Input)
-    Output = '## Output\n' + divs[15].get_text()[6:]
-    Output = Clear(Output)
-    f.write('%s\n' % Output)
+
+    problem_title = (divs[3].get_text())[3:]
+
+    problem_description = divs[12].get_text()
+    problem_description = Clear(problem_description)
+
+    problem_input = divs[13].get_text()[5:]
+    problem_input = Clear(problem_input)
+
+    problem_output = divs[15].get_text()[6:]
+    problem_output = Clear(problem_output)
+
     Sample = soup.find('div', {'class', 'sample-test'})
-    SampleInputs = Sample.find_all('div', {'class', 'input'})
-    SampleOutputs = Sample.find_all('div', {'class', 'output'})
-    for i in range(len(SampleInputs)):
-        SampleInput = SampleInputs[i].get_text()
-        SampleOutput = SampleOutputs[i].get_text()
-        f.write('## Sample Input:\n```\n%s```\n' % SampleInput[5:])
-        f.write('## Sample Output:\n```\n%s```\n' % SampleOutput[6:])
-    # f.write('### [Origin](%s)\n\n' % url)
-    f.close()
-    f = open(path.dirname(path.realpath(__file__)) +
-             '/tmp/' + Prob + '.md', 'r', encoding='utf-8')
-    logToDB('CF' + Prob, (divs[3].get_text())[3:], f.read(), url, 1)
-    f.close()
+    problem_sample_inputs = Sample.find_all('div', {'class', 'input'})
+    problem_sample_outputs = Sample.find_all('div', {'class', 'output'})
+
+    pid = recordProblem('CF' + Prob, problem_title,
+                        problem_description, problem_input, problem_output, url, 2)
+
+    for i in range(len(problem_sample_inputs)):
+        problem_sample_input = problem_sample_inputs[i].get_text()[5:]
+        problem_sample_output = problem_sample_outputs[i].get_text()[6:]
+        recordSample(pid, problem_sample_input, problem_sample_output)
 
 
-def logToDB(pcode, title, desc, origin, OJ):
+def recordProblem(pcode, problem_title, problem_description, problem_input, problem_output, origin, OJ):
     db = pymysql.connect("localhost", "root", "root", "codemaster")
     cursor = db.cursor()
-    sql = "INSERT INTO problem set `pcode`=%s, `title`=%s, `desc`=%s, `origin`=%s, `OJ`=%s"
-    cursor.execute(sql, (pcode, title, desc, origin, OJ))
-    # try:
-    #     cursor.execute(sql, (pcode, title, desc, origin, OJ))
-    #     db.commit()
-    # except:
-    #     db.rollback()
+    sql = "INSERT INTO problem set `pcode`=%s, `title`=%s, `description`=%s, `input`=%s, `output`=%s, `type`=0,`hint`='', `origin`=%s, `OJ`=%s"
+    cursor.execute(sql, (pcode, problem_title, problem_description,
+                         problem_input, problem_output, origin, OJ))
+    pid = int(cursor.lastrowid)
+    db.close()
+    return pid
+
+
+def recordSample(pid, sample_input, sample_output):
+    db = pymysql.connect("localhost", "root", "root", "codemaster")
+    cursor = db.cursor()
+    sql = "INSERT INTO problem_sample set `pid`=%s, `sample_input`=%s, `sample_output`=%s"
+    cursor.execute(sql, (pid, sample_input, sample_output))
     db.close()
 
 
